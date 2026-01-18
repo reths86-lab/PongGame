@@ -1,1 +1,780 @@
-# PongGame
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Security Device Management Dashboard</title>
+  <style>
+    :root {
+      --bg-root: #020617;
+      --bg-surface: #020617;
+      --bg-elevated: #02081f;
+      --border-subtle: #0f172a;
+      --border-strong: #1e293b;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --accent: #22d3ee;
+      --accent-strong: #06b6d4;
+      --accent-soft: rgba(34,211,238,0.18);
+      --danger: #f97373;
+      --danger-deep: #ef4444;
+      --warning: #fbbf24;
+      --success: #4ade80;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --radius-pill: 999px;
+      --shadow-soft: 0 18px 45px rgba(15,23,42,0.75);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.18), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(59,130,246,0.15), transparent 60%),
+        #020617;
+      color: var(--text-main);
+    }
+
+    .top-bar {
+      padding: 18px 32px 14px;
+      border-bottom: 1px solid var(--border-strong);
+      background:
+        linear-gradient(to right, rgba(15,23,42,0.96), rgba(15,23,42,0.94));
+      backdrop-filter: blur(18px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 10px 28px rgba(15,23,42,0.9);
+    }
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .title {
+      font-size: 24px;
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+    }
+    .title-lock {
+      width: 22px;
+      height: 22px;
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 30% 30%, #facc15, #ea580c);
+      box-shadow:
+        0 0 0 1px rgba(15,23,42,0.9),
+        0 0 16px rgba(234,88,12,0.9);
+    }
+    .subtitle {
+      margin-top: 4px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-strong);
+      background:
+        linear-gradient(to bottom right, #020819, #020617);
+      font-size: 13px;
+      color: var(--text-muted);
+      box-shadow: 0 8px 22px rgba(15,23,42,0.8);
+    }
+    .file-input-wrapper span { white-space: nowrap; }
+    .file-input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #0ea5e9, #0369a1);
+      border: 1px solid #0ea5e9;
+      color: white;
+      padding: 7px 16px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 10px 26px rgba(8,47,73,0.8);
+      transition: transform 0.08s ease-out, box-shadow 0.12s ease-out, background 0.12s;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(8,47,73,0.95);
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+    }
+    .btn.secondary {
+      background: #020617;
+      border-color: var(--border-strong);
+      color: var(--text-main);
+      box-shadow: none;
+    }
+    .btn.secondary:hover {
+      background: #020821;
+      box-shadow: 0 6px 22px rgba(15,23,42,0.95);
+    }
+
+    .filter-chip {
+      background-color: #020617;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      padding: 6px 14px;
+      color: var(--text-main);
+      font-size: 13px;
+      min-width: 170px;
+      outline: none;
+      appearance: none;
+      background-image:
+        linear-gradient(to right, rgba(34,211,238,0.15), transparent),
+        url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23e5e7eb' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 18px 10px;
+      padding-right: 28px;
+    }
+    .filter-chip:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-soft);
+    }
+
+    .layout {
+      padding: 18px 32px 40px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+    .card {
+      border-radius: var(--radius-lg);
+      padding: 16px 18px 14px;
+      background:
+        linear-gradient(to bottom right, rgba(15,23,42,0.9), rgba(15,23,42,0.98)),
+        radial-gradient(circle at top left, rgba(34,211,238,0.2), transparent 55%);
+      border: 1px solid rgba(15,23,42,0.95);
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      border-top: 1px solid rgba(34,211,238,0.25);
+      opacity: 0.85;
+      pointer-events: none;
+    }
+    .card-inner { position: relative; z-index: 1; }
+    .card-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+    .card-main {
+      font-size: 30px;
+      font-weight: 650;
+    }
+    .card-sub {
+      margin-top: 4px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--success);
+    }
+    .card-sub.warning { color: var(--warning); }
+    .card-sub.danger { color: var(--danger-deep); }
+
+    .tab-row {
+      display: inline-flex;
+      gap: 2px;
+      padding: 2px;
+      border-radius: var(--radius-pill);
+      background: rgba(15,23,42,0.96);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 10px;
+      box-shadow: 0 10px 26px rgba(15,23,42,0.9);
+    }
+    .tab {
+      padding: 6px 13px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-muted);
+      border-radius: var(--radius-pill);
+      border: none;
+      background: transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.12s, color 0.12s, box-shadow 0.12s;
+    }
+    .tab span { font-size: 11px; }
+    .tab.active {
+      color: var(--text-main);
+      background: radial-gradient(circle at top left, rgba(34,211,238,0.2), rgba(15,23,42,0.98));
+      box-shadow: 0 0 0 1px var(--accent-soft);
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 8px 0 4px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filter-row-left {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .filter-label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+    th, td {
+      border: 1px solid var(--border-strong);
+      padding: 7px 8px;
+      text-align: left;
+    }
+    th {
+      background: #020617;
+      color: var(--text-muted);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      font-weight: 500;
+    }
+    tbody tr:nth-child(even) { background-color: #020617; }
+    tbody tr:nth-child(odd) { background-color: #010510; }
+    tbody tr:hover {
+      background:
+        linear-gradient(to right, rgba(34,211,238,0.16), rgba(15,23,42,0.98));
+    }
+
+    .tag {
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      background-color: rgba(15,23,42,0.9);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.9);
+    }
+    .pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      background: #020617;
+    }
+    .pill.danger {
+      border-color: rgba(248,113,113,0.8);
+      color: var(--danger);
+      background: rgba(127,29,29,0.35);
+    }
+    .pill.warning {
+      border-color: rgba(251,191,36,0.8);
+      color: var(--warning);
+      background: rgba(113,63,18,0.4);
+    }
+    .pill.success {
+      border-color: rgba(74,222,128,0.8);
+      color: var(--success);
+      background: rgba(22,101,52,0.45);
+    }
+    .pill.neutral {
+      color: var(--text-muted);
+      background: rgba(15,23,42,0.9);
+    }
+
+    .table-shell {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-strong);
+      background:
+        linear-gradient(to bottom right, rgba(15,23,42,0.98), rgba(15,23,42,0.98));
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
+    .table-scroll {
+      max-height: 360px;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="top-row">
+      <div>
+        <h1 class="title">
+          <span class="title-lock"></span>
+          SECURITY DEVICE MANAGEMENT
+        </h1>
+        <p class="subtitle">
+          Certificate, license, firmware &amp; EOL lifecycle for NSO network security devices
+        </p>
+      </div>
+      <div class="controls">
+        <label class="file-input-wrapper">
+          <span>Load NSO CSV</span>
+          <input id="fileInput" type="file" accept=".csv" class="file-input" />
+        </label>
+        <button class="btn secondary" onclick="resetData()">Reset</button>
+      </div>
+    </div>
+    <div class="controls" style="margin-top:10px;">
+      <select id="expiryScope" class="filter-chip">
+        <option value="cert">View: Certificate expiry</option>
+        <option value="license">View: License expiry</option>
+        <option value="eolhw">View: Hardware EOL</option>
+        <option value="eolsw">View: Software EOL</option>
+        <option value="all">View: All devices (no ageing)</option>
+      </select>
+      <select id="statusFilter" class="filter-chip">
+        <option value="">All status (selected metric)</option>
+        <option value="critical">0–30 days</option>
+        <option value="warning">31–90 days</option>
+        <option value="compliant">&gt; 90 days</option>
+        <option value="expired">Already expired</option>
+      </select>
+      <select id="typeFilter" class="filter-chip">
+        <option value="">All device types</option>
+      </select>
+      <select id="locationFilter" class="filter-chip">
+        <option value="">All locations</option>
+      </select>
+      <select id="vendorFilter" class="filter-chip">
+        <option value="">All vendors</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="cards">
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-title">Total Devices</div>
+          <div id="totalDevices" class="card-main">0</div>
+          <div class="card-sub"><span>All tracked</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-title">0–30 Days</div>
+          <div id="expiring30" class="card-main">0</div>
+          <div class="card-sub danger"><span>Immediate attention</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-title">31–90 Days</div>
+          <div id="expiring90" class="card-main">0</div>
+          <div class="card-sub warning"><span>Plan renewals</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-title">&gt; 90 Days</div>
+          <div id="compliant" class="card-main">0</div>
+          <div class="card-sub"><span>On track</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="filter-row">
+        <div class="filter-row-left">
+          <div class="tab-row">
+            <button id="tabCritical" class="tab active" onclick="setTab('critical')">
+              <span>●</span>Critical window
+            </button>
+            <button id="tabUpcoming" class="tab" onclick="setTab('upcoming')">
+              <span>◎</span>Upcoming (31–90 days)
+            </button>
+            <button id="tabBeyond" class="tab" onclick="setTab('beyond')">
+              <span>○</span>&gt; 90 days
+            </button>
+          </div>
+          <div class="filter-label">
+            Table follows selected metric (certificate, license, HW EOL, SW EOL, or all).
+          </div>
+        </div>
+      </div>
+
+      <div class="table-shell">
+        <div class="table-scroll">
+          <table id="deviceTable">
+            <thead>
+              <tr>
+                <th>NAME</th>
+                <th>IP</th>
+                <th>DEVICE-TYPE</th>
+                <th>VENDOR</th>
+                <th>MODEL</th>
+                <th>LOCATION</th>
+                <th>FIRMWARE</th>
+                <th>FIRMWARE-BASELINE</th>
+                <th>CERT-EXPIRY</th>
+                <th>LICENSE-EXPIRY</th>
+                <th>EOL(HARDWARE)</th>
+                <th>EOL(SOFTWARE)</th>
+                <th>FW Compliance</th>
+                <th>Status (selected)</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TODAY = new Date();
+    let devices = [];
+    let currentTab = "critical";
+    let counts = { total: 0, critical: 0, warning: 0, compliant: 0 };
+
+    document.getElementById("fileInput").addEventListener("change", function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        const text = evt.target.result;
+        parseCsv(text);
+        computeAll();
+        updateFilters();
+        render();
+      };
+      reader.readAsText(file);
+    });
+
+    document.getElementById("expiryScope").addEventListener("change", () => {
+      computeAll();
+      render();
+    });
+    document.getElementById("statusFilter").addEventListener("change", render);
+    document.getElementById("typeFilter").addEventListener("change", render);
+    document.getElementById("locationFilter").addEventListener("change", render);
+    document.getElementById("vendorFilter").addEventListener("change", render);
+
+    function resetData() {
+      devices = [];
+      document.getElementById("fileInput").value = "";
+      computeAll();
+      updateFilters();
+      render();
+    }
+
+    // Parse CSV including firmware and baseline. [file:3]
+    function parseCsv(text) {
+      const lines = text.trim().split(/\r?\n/);
+      const headers = lines[0].split(",");
+      const dataRows = lines.slice(1);
+
+      devices = dataRows
+        .filter((line) => line.trim().length > 0)
+        .map((line) => {
+          const cols = line.split(",");
+          const obj = {};
+          headers.forEach((h, i) => {
+            obj[h.trim()] = (cols[i] || "").trim();
+          });
+
+          const certExp = parseDate(obj["CERT-EXPIRY"]);
+          const licExp = parseDate(obj["LICENSE-EXPIRY"]);
+          const eolHw = parseDate(obj["EOL(HARDWARE)"]);
+          const eolSw = parseDate(obj["EOL(SOFTWARE)"]);
+
+          obj._certDays = certExp ? diffInDays(certExp, TODAY) : null;
+          obj._licDays = licExp ? diffInDays(licExp, TODAY) : null;
+          obj._eolHwDays = eolHw ? diffInDays(eolHw, TODAY) : null;
+          obj._eolSwDays = eolSw ? diffInDays(eolSw, TODAY) : null;
+
+          obj._certStatus = classifyDays(obj._certDays);
+          obj._licStatus = classifyDays(obj._licDays);
+          obj._eolHwStatus = classifyDays(obj._eolHwDays);
+          obj._eolSwStatus = classifyDays(obj._eolSwDays);
+
+          // firmware vs baseline compliance
+          obj._fwCompliance = firmwareCompliant(
+            obj["FIRMWARE"],
+            obj["FIRMWARE-BASELINE"]
+          );
+
+          return obj;
+        });
+    }
+
+    function parseDate(str) {
+      if (!str) return null;
+      const parts = str.split("/");
+      if (parts.length !== 3) return null;
+      const d = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      const y = parseInt(parts[2], 10);
+      const dt = new Date(y, m, d);
+      return isNaN(dt.getTime()) ? null : dt;
+    }
+
+    function diffInDays(future, base) {
+      const ms = future.getTime() - base.getTime();
+      return Math.round(ms / (1000 * 60 * 60 * 24));
+    }
+
+    function classifyDays(days) {
+      if (days === null) return "unknown";
+      if (days < 0) return "expired";
+      if (days <= 30) return "critical";
+      if (days <= 90) return "warning";
+      return "compliant";
+    }
+
+    // Compare firmware vs baseline; >= baseline is compliant.
+    // Handles "7.4.6" vs "7.4.9" and "R80.10" vs "R82.10". [file:3]
+    function firmwareCompliant(current, baseline) {
+      if (!current || !baseline) return "Unknown";
+
+      const normalize = (v) =>
+        v
+          .replace(/[^0-9.]/g, " ")
+          .trim()
+          .split(/\s+/)
+          .pop()
+          .split(".")
+          .map((n) => parseInt(n, 10) || 0);
+
+      const a = normalize(current);
+      const b = normalize(baseline);
+      const len = Math.max(a.length, b.length);
+
+      for (let i = 0; i < len; i++) {
+        const av = a[i] || 0;
+        const bv = b[i] || 0;
+        if (av > bv) return "Compliant";
+        if (av < bv) return "Not compliant";
+      }
+      return "Compliant";
+    }
+
+    function activeScopeKey() {
+      const scope = document.getElementById("expiryScope").value;
+      if (scope === "license") return "lic";
+      if (scope === "eolhw") return "eolHw";
+      if (scope === "eolsw") return "eolSw";
+      if (scope === "all") return "all";
+      return "cert";
+    }
+
+    function computeAll() {
+      const scope = activeScopeKey();
+      counts = { total: devices.length, critical: 0, warning: 0, compliant: 0 };
+
+      if (scope === "all") return;
+
+      devices.forEach((d) => {
+        const status = d[`_${scope}Status`] || "unknown";
+        if (status === "critical") counts.critical += 1;
+        else if (status === "warning") counts.warning += 1;
+        else if (status === "compliant") counts.compliant += 1;
+      });
+    }
+
+    function updateFilters() {
+      const typeSet = new Set();
+      const locSet = new Set();
+      const vendorSet = new Set();
+
+      devices.forEach((d) => {
+        if (d["DEVICE-TYPE"]) typeSet.add(d["DEVICE-TYPE"]);
+        if (d["LOCATION"]) locSet.add(d["LOCATION"]);
+        if (d["VENDOR"]) vendorSet.add(d["VENDOR"]);
+      });
+
+      populateSelect("typeFilter", "All device types", Array.from(typeSet).sort());
+      populateSelect("locationFilter", "All locations", Array.from(locSet).sort());
+      populateSelect("vendorFilter", "All vendors", Array.from(vendorSet).sort());
+    }
+
+    function populateSelect(id, label, options) {
+      const sel = document.getElementById(id);
+      const current = sel.value;
+      sel.innerHTML = "";
+      const optAll = document.createElement("option");
+      optAll.value = "";
+      optAll.textContent = label;
+      sel.appendChild(optAll);
+      options.forEach((v) => {
+        const o = document.createElement("option");
+        o.value = v;
+        o.textContent = v;
+        sel.appendChild(o);
+      });
+      if (options.includes(current)) sel.value = current;
+      else sel.value = "";
+    }
+
+    function setTab(tab) {
+      currentTab = tab;
+      document.getElementById("tabCritical").classList.toggle("active", tab === "critical");
+      document.getElementById("tabUpcoming").classList.toggle("active", tab === "upcoming");
+      document.getElementById("tabBeyond").classList.toggle("active", tab === "beyond");
+      render();
+    }
+
+    function render() {
+      document.getElementById("totalDevices").textContent = counts.total;
+      document.getElementById("expiring30").textContent = counts.critical;
+      document.getElementById("expiring90").textContent = counts.warning;
+      document.getElementById("compliant").textContent = counts.compliant;
+
+      const statusFilter = document.getElementById("statusFilter").value;
+      const typeFilter = document.getElementById("typeFilter").value;
+      const locationFilter = document.getElementById("locationFilter").value;
+      const vendorFilter = document.getElementById("vendorFilter").value;
+
+      const scope = activeScopeKey();
+      const tbody = document.querySelector("#deviceTable tbody");
+      tbody.innerHTML = "";
+
+      const rows = devices.filter((d) => {
+        let status = "unknown";
+        let days = null;
+
+        if (scope !== "all") {
+          status = d[`_${scope}Status`] || "unknown";
+          days = d[`_${scope}Days`];
+
+          if (currentTab === "critical") {
+            if (!(status === "critical" || status === "expired")) return false;
+          } else if (currentTab === "upcoming") {
+            if (status !== "warning") return false;
+          } else if (currentTab === "beyond") {
+            if (status !== "compliant") return false;
+          }
+
+          if (statusFilter && status !== statusFilter) return false;
+        }
+
+        if (typeFilter && d["DEVICE-TYPE"] !== typeFilter) return false;
+        if (locationFilter && d["LOCATION"] !== locationFilter) return false;
+        if (vendorFilter && d["VENDOR"] !== vendorFilter) return false;
+
+        d._activeStatus = status;
+        d._activeDays = days;
+        return true;
+      });
+
+      rows.forEach((d) => {
+        const tr = document.createElement("tr");
+
+        addCell(tr, d["NAME"]);
+        addCell(tr, d["IP"]);
+
+        const typeTd = document.createElement("td");
+        const span = document.createElement("span");
+        span.className = "tag";
+        span.textContent = d["DEVICE-TYPE"] || "Unknown";
+        typeTd.appendChild(span);
+        tr.appendChild(typeTd);
+
+        addCell(tr, d["VENDOR"]);
+        addCell(tr, d["MODEL"]);
+        addCell(tr, d["LOCATION"]);
+        addCell(tr, d["FIRMWARE"]);
+        addCell(tr, d["FIRMWARE-BASELINE"]);
+        addCell(tr, d["CERT-EXPIRY"]);
+        addCell(tr, d["LICENSE-EXPIRY"]);
+        addCell(tr, d["EOL(HARDWARE)"]);
+        addCell(tr, d["EOL(SOFTWARE)"]);
+
+        // Firmware compliance pill
+        const fwTd = document.createElement("td");
+        const fwPill = document.createElement("span");
+        const fwStatus = d._fwCompliance || "Unknown";
+        fwPill.className =
+          "pill " +
+          (fwStatus === "Compliant"
+            ? "success"
+            : fwStatus === "Not compliant"
+            ? "danger"
+            : "neutral");
+        fwPill.textContent = fwStatus;
+        fwTd.appendChild(fwPill);
+        tr.appendChild(fwTd);
+
+        // Selected metric status pill
+        const statusTd = document.createElement("td");
+        const pill = document.createElement("span");
+        pill.className = "pill " + pillClass(d._activeStatus);
+        pill.textContent = statusLabel(d._activeStatus, d._activeDays);
+        statusTd.appendChild(pill);
+        tr.appendChild(statusTd);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addCell(tr, val) {
+      const td = document.createElement("td");
+      td.textContent = val || "";
+      tr.appendChild(td);
+    }
+
+    function statusLabel(status, days) {
+      if (status === "critical") return "0–30 days (" + days + "d)";
+      if (status === "warning") return "31–90 days (" + days + "d)";
+      if (status === "compliant") return "> 90 days (" + days + "d)";
+      if (status === "expired") return "Expired (" + days + "d)";
+      return "Not evaluated";
+    }
+
+    function pillClass(status) {
+      if (status === "critical" || status === "expired") return "danger";
+      if (status === "warning") return "warning";
+      if (status === "compliant") return "success";
+      return "neutral";
+    }
+
+    computeAll();
+    updateFilters();
+    render();
+  </script>
+</body>
+</html>
